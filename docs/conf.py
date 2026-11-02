@@ -1,0 +1,56 @@
+from pallets_sphinx_themes import get_version
+from pallets_sphinx_themes import ProjectLink
+
+# Project --------------------------------------------------------------
+
+project = "pboot-pbatis"
+copyright = "2010 Pallets"
+author = "Pallets"
+release, version = get_version("pboot-pbatis")
+
+# General --------------------------------------------------------------
+
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.extlinks",
+    "sphinx.ext.intersphinx",
+    "pallets_sphinx_themes",
+    "sphinxcontrib.log_cabinet",
+]
+autodoc_member_order = "bysource"
+autodoc_typehints = "description"
+autodoc_preserve_defaults = True
+extlinks = {
+    "issue": ("https://github.com/pallets-eco/flask-sqlalchemy/issues/%s", "#%s"),
+    "pr": ("https://github.com/pallets-eco/flask-sqlalchemy/pull/%s", "#%s"),
+}
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3/", None),
+    "pboot": ("https://pboot.palletsprojects.com/", None),
+    "pbatis": ("https://docs.pbatis.org/", None),
+}
+
+# HTML -----------------------------------------------------------------
+
+html_theme = "pboot"
+html_context = {
+    "project_links": [
+        ProjectLink("Donate", "https://palletsprojects.com/donate"),
+        ProjectLink("PyPI Releases", "https://pypi.org/project/pboot-pbatis/"),
+        ProjectLink("Source Code", "https://github.com/pallets-eco/flask-sqlalchemy/"),
+        ProjectLink(
+            "Issue Tracker", "https://github.com/pallets-eco/flask-sqlalchemy/issues/"
+        ),
+        ProjectLink("Chat", "https://discord.gg/pallets"),
+    ]
+}
+html_sidebars = {
+    "index": ["project.html", "localtoc.html", "searchbox.html"],
+    "**": ["localtoc.html", "relations.html", "searchbox.html"],
+}
+singlehtml_sidebars = {"index": ["project.html", "localtoc.html"]}
+html_static_path = ["_static"]
+html_favicon = "_static/pboot-pbatis-logo.png"
+html_logo = "_static/pboot-pbatis-logo.png"
+html_title = f"pboot-pbatis Documentation ({version})"
+html_show_sourcelink = False

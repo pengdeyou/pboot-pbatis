@@ -1,0 +1,224 @@
+[project]
+name = "pboot-pbatis"
+version = "1.0.0"
+description = "Add pbatis ORM support to your Pboot application."
+readme = "README.md"
+license = { file = "LICENSE.txt" }
+maintainers = [{name = "pboot-org"}]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Typing :: Typed",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "pboot>=3.2.0",
+    "pbatis>=1.1.3",
+]
+
+[dependency-groups]
+build = [
+    "build",
+]
+dev = [
+    "ruff",
+    "tox",
+    "tox-uv",
+    {include-group = "pre-commit"},
+    {include-group = "docs"},
+    {include-group = "tests"},
+    {include-group = "typing"},
+]
+docs = [
+    "pallets-sphinx-themes",
+    "sphinx",
+    "sphinxcontrib-log-cabinet",
+]
+gha-update = [
+    "gha-update ; python_full_version >= '3.12'",
+]
+pre-commit = [
+    "pre-commit ; python_full_version >= '3.9'",
+    "pre-commit-uv ; python_full_version >= '3.9'",
+]
+tests = [
+    "pytest",
+]
+typing = [
+    "mypy",
+    "pyright",
+    "pytest",
+]
+
+[project.urls]
+Donate = "https://palletsprojects.com/donate"
+Documentation = "https://gitee.com/pboot-org/pboot-pbatis"
+Changes = "https://gitee.com/pboot-org/pboot-pbatis/blob/main/CHANGES.rst"
+Source = "https://gitee.com/pboot-org/pboot-pbatis"
+Chat = "https://discord.gg/pallets"
+
+[build-system]
+requires = ["flit-core<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.module]
+name = "pboot_pbatis"
+
+[tool.flit.sdist]
+include = [
+    "docs/",
+    "requirements/",
+    "tests/",
+    "CHANGES.rst",
+    "tox.ini",
+]
+exclude = [
+    "docs/_build/",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+    "error",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["pboot_pbatis", "tests"]
+
+[tool.coverage.paths]
+source = ["src", "*/site-packages"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["src", "tests"]
+show_error_codes = true
+pretty = true
+strict = true
+# db.Model attribute doesn't recognize subclassing
+disable_error_code = ["name-defined"]
+# db.Model is Any
+disallow_subclassing_any = false
+
+[tool.pyright]
+pythonVersion = "3.8"
+include = ["src", "tests"]
+typeCheckingMode = "standard"
+
+[tool.ruff]
+extend-exclude = ["examples/"]
+src = ["src"]
+fix = true
+show-fixes = true
+output-format = "full"
+
+[tool.ruff.lint]
+select = [
+    "B",  # flake8-bugbear
+    "E",  # pycodestyle error
+    "F",  # pyflakes
+    "I",  # isort
+    "UP",  # pyupgrade
+    "W",  # pycodestyle warning
+]
+ignore-init-module-imports = true
+
+[tool.ruff.lint.isort]
+force-single-line = true
+order-by-type = false
+
+[tool.tox]
+envlist = [
+    "py3.12",
+    "py3.11",
+    "py3.10",
+    "py3.9",
+    "py3.8",
+    "style",
+    "tests-min",
+    "typing",
+    "docs",
+]
+
+[tool.tox.env_run_base]
+description = "pytest on latest dependency versions"
+runner = "uv-venv-lock-runner"
+package = "wheel"
+wheel_build_env = ".pkg"
+constrain_package_deps = true
+use_frozen_constraints = true
+dependency_groups = ["tests"]
+env_tmp_dir = "{toxworkdir}/tmp/{envname}"
+commands = [[
+    "pytest", "-v", "--capture=tee-sys", "--tb=short", "--basetemp={env_tmp_dir}",
+    {replace = "posargs", default = [], extend = true},
+]]
+
+[tool.tox.env.docs]
+description = "build docs"
+dependency_groups = ["docs"]
+commands = [["sphinx-build", "-E", "-W", "-b", "html", "docs", "docs/_build/"]]
+
+[tool.tox.env.style]
+description = "run all pre-commit hooks on all files"
+dependency_groups = ["pre-commit"]
+skip_install = true
+commands = [["pre-commit", "run", "--all-files"]]
+
+[tool.tox.env.tests-min]
+description = "pytest on minimum dependency versions"
+base_python = ["3.11"]
+commands = [
+    [
+        "uv", "pip", "install",
+        "pboot==3.2.0",
+        "pbatis==1.1.3",
+        "werkzeug<2.3",
+    ],
+    [
+        "pytest", "-v", "--tb=short", "--basetemp={env_tmp_dir}",
+        {replace = "posargs", default = [], extend = true},
+    ],
+]
+
+[tool.tox.env.typing]
+description = "run static type checkers"
+dependency_groups = ["typing"]
+commands = [
+    ["mypy"],
+]
+
+[tool.tox.env.update-actions]
+description = "update GitHub Actions pins"
+labels = ["update"]
+dependency_groups = ["gha-update"]
+skip_install = true
+commands = [["gha-update"]]
+
+[tool.tox.env.update-pre-commit]
+description = "update pre-commit pins"
+labels = ["update"]
+dependency_groups = ["pre-commit"]
+skip_install = true
+commands = [["pre-commit", "autoupdate", "--freeze", "-j4"]]
+
+[tool.tox.env.update-requirements]
+description = "update uv lock"
+labels = ["update"]
+dependency_groups = []
+no_default_groups = true
+skip_install = true
+commands = [["uv", "lock", {replace = "posargs", default = ["-U"], extend = true}]]
+
+[tool.uv]
+default-groups = ["dev", "pre-commit", "tests", "typing"]
+
+[tool.gha-update]
+tag-only = [
+    "slsa-framework/slsa-github-generator",
+]

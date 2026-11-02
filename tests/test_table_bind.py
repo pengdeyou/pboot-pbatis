@@ -1,0 +1,39 @@
+from __future__ import annotations
+
+import pbatis as sa
+
+from pboot_pbatis import Pbatis
+
+
+def test_bind_key_default(db: Pbatis) -> None:
+    user_table = db.Table("user", sa.Column("id", sa.Integer, primary_key=True))
+    assert user_table.metadata is db.metadata
+
+
+def test_metadata_per_bind(db: Pbatis) -> None:
+    user_table = db.Table(
+        "user", sa.Column("id", sa.Integer, primary_key=True), bind_key="other"
+    )
+    assert user_table.metadata is db.metadatas["other"]
+
+
+def test_multiple_binds_same_table_name(db: Pbatis) -> None:
+    user1_table = db.Table("user", sa.Column("id", sa.Integer, primary_key=True))
+    user2_table = db.Table(
+        "user", sa.Column("id", sa.Integer, primary_key=True), bind_key="other"
+    )
+
+    assert user1_table.metadata is db.metadata
+    assert user2_table.metadata is db.metadatas["other"]
+
+
+def test_explicit_metadata(db: Pbatis) -> None:
+    other_metadata = sa.MetaData()
+    user_table = db.Table(
+        "user",
+        other_metadata,
+        sa.Column("id", sa.Integer, primary_key=True),
+        bind_key="other",
+    )
+    assert user_table.metadata is other_metadata
+    assert "other" not in db.metadatas
